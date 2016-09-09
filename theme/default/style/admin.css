@@ -1,0 +1,43 @@
+/* --------------------------------------------------------------- */
+/**
+ * FILE NAME   : op.css
+ * AUTHOR      : Sandy Wong
+ * SYNOPSIS    :
+ * DESCRIPTION : LMS Operation Portal CSS
+ * SEE ALSO    :
+ * VERSION     : 1.0 ($Revision$)
+ * CREATED     : 25-JUL-2013
+ * LASTUPDATES : $Author$ on $Date$
+ * UPDATES     : 
+ * NOTES       : 
+ */
+/* ---------------------------------------------------------------
+   @(#)op.css                   1.0 25-JUL-2013
+   by Sandy Wong
+
+
+   Copyright by ASTRI, Ltd., (ECE Group)
+   All rights reserved.
+
+   This software is the confidential and proprietary information
+   of ASTRI, Ltd. ("Confidential Information").  You shall not
+   disclose such Confidential Information and shall use it only
+   in accordance with the terms of the license agreement you
+   entered into with ASTRI.
+   --------------------------------------------------------------- */
+
+
+/* ===============================================================
+   Begin of op.css
+   =============================================================== */
+
+#oauth_update_client_public_key pre {
+    
+    font-size: 80%;
+    
+}
+
+/* ===============================================================
+   End of op.css
+   =============================================================== */
+

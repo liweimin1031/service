@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<link rel="stylesheet" href="jslib/bootstrap/css/bootstrap.min.css">
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Text Mining demo</title>
+
+</head>
+
+<body>
+	<div class="container">
+		<div class="row">
+				<h2>作文詞語分析</h2>
+				<h3>Input</h3>
+				<form>
+					<div class="form-group">
+						<textarea rows="20" class="form-control" id="sample_text"
+							placeholder="Paste Here">禍從口出
+俗語說：「病從口入，禍從口出。」你認為「禍從口出」對嗎？我認為這個觀念是對的。以下有例子證明我的看法。
+楊修是古代的人物，他經常說出承相的心底話，使承相不服氣，一直有殺他的相法。他在軍營中說出承相心底話，但是承相的想法是徹退，楊修便叫士兵提早收拾，這便違反了軍領，被承相判處死刑。這是禍從口出的例子。
+						 </textarea>
+					</div>
+					<input type="submit" value="submit" class="btn btn-primary" />
+				</form>
+				<!--- Analysis result--->
+				<div id="analysis_result"></div>
+			
+
+
+			
+		</div>
+
+
+
+	</div>
+
+	<script type="text/javascript" src="jslib/jquery-1.11.3.js"></script>
+	<script type="text/javascript" src="jslib/bootstrap/js/bootstrap.min.js"></script>
+
+	<script>
+   
+
+    $(document).ready(function() {
+
+      var form = $('form');
+      var inp  = $('form textarea');
+      form.submit(function(event) {
+		 $('#analysis_result').empty();
+         
+		 $.ajax({
+		     url: 'ajax.php/submitSentimentAnalysisJob',
+		     data : {
+		       data: inp.val(),
+		     },
+		     dataType: 'json',
+		     method: 'POST',
+		     success:function(result){
+		       if(result.success){
+		          getAnalyisResult(result.data.task_id);
+		           
+		       } else {
+		         $('#analysis_result').append(result.error.msg);
+		       }
+		       
+		     },
+		     error: function(result){
+		       $('#analysis_result').append('Network Error');
+		     }
+		 });
+		 event.preventDefault();
+      });
+      
+      function getAnalyisResult(task_id){
+        var url = "ajax.php/getTaskResult"; // the script where you handle the form input.
+        $.ajax({
+          type: "POST",
+          url: url,
+          dataType: 'json',
+          data: {
+            taskid: task_id
+          },
+          success: function(data) {
+            if (data.success) {
+              if (data.data.status == '100') {
+                $.each(data.data.output, function(index, element){
+        			     var style= "text_none"
+        			     if(element.type){
+        				    style = 'text_edb text_'+element.type;
+        				 }
+        				 
+        				 if(element.oral) {
+        				     style +=' text_oral';
+        				 }
+        				 
+        				 if(element.idiom){
+        				     style += ' text_idiom_full';
+        				 }
+        				 
+        			     $('#analysis_result').append('<span class="textmining '+ style+'">'+element.word+'</span>')
+        			 });
+              } else if (data.data.status == '201') {
+                if (data.data.progress) {
+                  var text = data.data.progress.message;                 
+                  var percentage = data.data.progress.percentage;
+                  
+                }
+
+                setTimeout(function() {
+                  getAnalyisResult(task_id);
+                }, 5000);
+              }
+             
+            } else {
+              
+              $('#analysis_result').append(data.error.reason);
+              
+            }
+          }
+        });
+        
+      }
+      $('#result_hightlight input').change(function() {
+        if ($(this).is(":checked")) {
+          type = this.value;
+          if (type == 'lower') {
+            type = ' bg-primary'
+          } else if (type == 'upper') {
+            type = ' bg-success'
+          } else if (type == 'idiom') {
+            type = ' bg-info'
+          } else if (type == 'idiom_full') {
+            type = ' bg-info'
+          } else if (type == 'proverb') {
+            type = ' bg-warning'
+          } else if (type == 'oral') {
+            type = ' bg-danger'
+          }
+          $('.text_' + this.value).addClass(type);
+        } else {
+          $('.text_' + this.value).removeClass(function(index, css) {
+            return (css.match(/(^|\s)bg-\S+/g) || []).join(' ');
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

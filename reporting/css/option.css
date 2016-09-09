@@ -1,0 +1,44 @@
+
+table {
+    border: 1px solid #4d4d4d;
+}
+
+th {
+    background-color: #ddd;
+    height:40px;
+    text-align:center;
+}
+td {
+    height:40px;
+    text-align:center;
+}
+
+        html {background-color : white;}
+
+.navitem_active,
+.navitem {
+    outline : 0;
+    margin : 15px 20px 0px 15px;
+    font-size : 15px;
+    cursor : pointer;
+}
+
+.navitem:hover {
+    border-bottom:4px solid #9de4e3;
+}
+
+.navitem_active {
+    border-bottom:4px solid #3dc4c3;
+    font-weight : bold;
+    cursor : default;
+}
+
+.container {
+    padding-left:0;
+    margin-left:0;
+}
+
+.container-fluid {
+    padding-left:0;
+    margin-left:0;
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bootstrap 101 Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <h1>Topic</h1>
+    <table class="table table-hover" width=700px>
+      <tbody id="topic_table">
+
+    <script src="jslib/jquery-3.1.0.js"></script>
+    <script src="jslib/bootstrap.min.js"></script>
+    <script>
+      //draw table
+      var tableDataFormat=[{
+        'title':'title',
+        'post_create_date':'2016-7-1',
+        'comments':[
+          {
+            'text':'comment text',
+            'word_flag':'comment word flag',
+            'analyse_word':'comment analyse word'
+          }]
+      }]
+      function setTable(tableData){
+        var trLineNumber=tableData.length;
+        var _table = document.getElementById("topic_table"); 
+        var _row; 
+        var _cell; 
+        for (var i = 0; i < trLineNumber; i++) { 
+          _row = document.createElement("tr"); 
+          var td_topic=tableData[i].title;
+          var td_data=tableData[i].data;
+          
+          _row.onclick= function(){setClick(this)}; //为每行增加单击事件 
+          _cell = document.createElement("td");
+          _cell.innerText = td_topic;
+          _cell.dataset.comments = td_data
+          _row.appendChild(_cell); 
+          document.getElementById("topic_table").appendChild(_row); 
+        } 
+      }
+      
+      function setClick(obj){
+        var data_index=obj.rowIndex;
+        var data=tableDataFormat[data_index]
+        var windowOpen = window.open("comments.html");
+        //windowOpen.document.write()
+        /*
+        $.ajax({   
+          type: "POST",   
+          url: "yourpage.php",   
+          data: params,   
+          success: function(str_response) {   
+            var obj = window.open("/comments.html");   
+            obj.document.write(str_response);   
+          }   
+        });
+        */
+      }
+      setTable(tableDataFormat)
+    </script>
+  </body>
+</html>

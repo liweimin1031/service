@@ -1,0 +1,92 @@
+#!/bin/sh
+#
+# lasd         Start up the LAS server deamon
+#
+# chkconfig:   2345 55 25
+# description: LASD is a program for Message Queue Server connection.
+#              This service starts up the LAS server daemon.
+#
+# processname: lasd
+# pidfile: /var/run/lasd.pid
+
+### BEGIN INIT INFO
+# Provides:             lasd
+# Required-Start:       $local_fs $network $apache2
+# Required-Stop:        $local_fs
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Start up the LAS server daemon
+# Description:          LASD is a program for Message Queue Server connection.
+#                       This service starts up the LAS server daemon.
+### END INIT INFO
+
+# Source function library.
+. /lib/lsb/init-functions
+
+RETVAL=0
+prog="lasd"
+lockfile=/var/lock/$prog
+
+LASD=/opt/sites/las-kary/sys/lasd.php
+PID_FILE=/var/run/lasd.pid
+LASD_OPTIONS="--pidfile $PID_FILE"
+
+start() {
+        log_daemon_msg "Starting $prog" "lasd"
+        $LASD $LASD_OPTIONS > /dev/null &
+    sleep 1
+    if [ ! -f "$PID_FILE" ]; then
+            log_end_msg 1 || true
+        else
+            log_end_msg 0 || true
+        fi
+}   
+
+stop() {
+    if [ ! -f "$PID_FILE" ]; then
+        # not running
+            log_daemon_msg "Stopping $prog" "lasd"
+            log_end_msg 0 || true
+    fi
+    log_daemon_msg "Stopping $prog" "lasd"
+    # user kill proc to stop the service
+    killproc -p $PID_FILE $prog -TERM
+    sleep 1
+    if [ ! -f "$PID_FILE" ]; then
+            log_end_msg 0 || true
+        else
+            log_end_msg 1 || true
+        fi
+}
+
+restart() {
+    stop
+    start
+}
+
+force_reload() {
+    stop
+    start
+}
+
+case "$1" in
+    start)
+    start
+    ;;
+    stop)
+    stop
+    ;;
+    status)
+    status_of_proc -p $PID_FILE $LASD "lasd"
+    exit $?
+    ;;
+    restart)
+    restart
+    ;;
+    *)
+    echo "Usage: lasd {start|stop|status|restart}"
+    exit 1
+    ;;
+esac
+
+exit $?

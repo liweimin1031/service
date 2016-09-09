@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<!--
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * FILE NAME   : test_api.html
+ * AUTHOR      : Patrick C. K. Wu
+ * SYNOPSIS    :
+ * DESCRIPTION : HTML for testing JSON submit
+ * SEE ALSO    :
+ * VERSION     : 1.0 ($Revision: 5166 $)
+ * CREATED     : 16-JUL-2012
+ * LASTUPDATES : $Author: patrickw $ on $Date: 2014-10-07 11:01:07 +0800 (Tue, 07 Oct 2014) $
+ * UPDATES     :
+ * NOTES       :
+ */
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   @(#)test_api.html            1.0 16-JUL-2012
+   by Patrick C. K. Wu
+
+
+   Copyright by ASTRI, Ltd., (ECE Group)
+   All rights reserved.
+
+   This software is the confidential and proprietary information
+   of ASTRI, Ltd. ("Confidential Information").  You shall not
+   disclose such Confidential Information and shall use it only
+   in accordance with the terms of the license agreement you
+   entered into with ASTRI.
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+-->
+
+<!--
+/* ===============================================================
+   Begin of test_api.html
+   =============================================================== */
+-->
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Test JSON submit</title>
+  <script type="text/javascript" src="../jslib/jquery-1.11.3.js"></script>
+  <script type="text/javascript" src="../jslib/json2.js"></script>
+  <script type="text/javascript" src="../jslib/jsonlint.js"></script>
+
+  <script>
+    $(document).ready(
+        function () {
+            var btnGetFile = $('#btn_getfile'),
+                btnSubmit = $('#btn_submit'),
+                btnSubmitFile = $('#btn_submit_file'),
+                btnValidate = $('#btn_input'),
+                inputURL = $('#input_url'),
+                objForm = $('#form'),
+                objInput = $('#json_input'),
+                objOutput = $('#json_output'),
+                objLog = $('#json_log');
+
+            if (
+                (typeof console === 'undefined') ||
+                (typeof console.log === 'undefined')
+            ) {
+                console = {};
+                console.log = function(msg) {};
+            }
+
+            btnSubmitFile.click(
+                function () {
+                    var objData = $('#data'),
+                        objForm = $('#form');
+
+                    $('form').get(0).setAttribute('action', inputURL.val());
+                    objData.val(objInput.val());
+                    objForm.submit();
+                }
+            );
+
+            btnGetFile.click(
+                function () {
+                    var objData = $('#data'),
+                        objForm = $('#form');
+
+                    $('form').get(0).setAttribute('action', inputURL.val());
+                    objData.val(objInput.val());
+                    objForm.submit();
+                }
+            );
+
+            btnSubmit.click(
+                function () {
+                    var data = objInput.val(),
+                        url = inputURL.val();
+
+                    try {
+                        data = (data) ? data : "{}";
+                        data = jsonlint.parse(data);
+                        var obj = {
+                            "data" : data    
+                        }
+                        
+                        jQuery.ajax(
+                            {
+                                type: 'POST',
+                                url: url,
+                                data: obj,
+                                error: function (xhr, textStatus, errorThrown) {
+                                    var msg;
+
+                                    msg = xhr.status + ': ' + xhr.statusText;
+                                    objLog.val(msg);
+                                },
+                                success: function (response) {
+                                    try {
+                                        var result = jsonlint.parse(response);
+                                        if ( result ) {
+                                            result = jQuery.parseJSON(response);
+                                            
+                                            objOutput.val(
+                                                JSON.stringify(
+                                                    result, null, "  "
+                                                )
+                                            );
+                                        }
+                                        else {
+                                            objOutput.val(response);
+                                        }
+                                        objOutput.focus();
+                                        objLog.val('');
+                                    }
+                                    catch (e) {
+                                        objOutput.val(response);
+                                        objLog.val(e);
+                                    }
+                                }
+                            }
+                        );
+                    }
+                    catch (e) {
+                        objLog.val(e);
+                        objLog.focus();
+                    }
+                }
+            );
+            btnValidate.click(
+                function () {
+                    var result;
+                    try {
+                        result = jsonlint.parse(objInput.val());
+                        if ( result ) {
+                            objInput.val(JSON.stringify(result, null, "  "));
+                            objLog.val('');
+                        }
+                    }
+                    catch (e) {
+                        objLog.val(e);
+                        objLog.focus();
+                    }
+                }
+            );
+        }
+    );
+  </script>
+</head>
+
+<style type="text/css">
+<!--
+.field_row {
+    clear: both;
+}
+.empty_label,
+.field_label {
+    width: 100px;
+    float: left;
+    margin-right: 10px;
+}
+.field_label:after {
+    content: ': ';
+}
+.field {
+    width: 700px;
+    float: left;
+}
+-->
+</style>
+
+<body>
+
+<div class="field_row">
+  <div class="field_label">URL</div>
+  <input
+    class="field"
+    id="input_url"
+    type="text"
+    placeholder="Input API endpoint here."
+  />
+</div>
+
+<div class="field_row">
+  <div class="field_label">Input</div>
+  <textarea
+    class="field"
+    id="json_input"
+    name="json_input"
+    rows="5" cols="80"
+    spellcheck="false"
+    placeholder="Enter JSON input here."
+    wrap="off"
+  ></textarea>
+</div>
+
+<div class="field_row">
+  <div class="field_label">Select File</div>
+  <form id="form" action="" enctype="multipart/form-data" method="POST">
+    <input type="hidden" id="data" name="data" />
+    <input type="file" name="paper_data" />
+  </form>
+</div>
+
+<div class="field_row">
+  <div class="field_label">Output</div>
+  <textarea
+    class="field"
+    id="json_output"
+    name="json_output"
+    rows="10" cols="80"
+    readonly="true"
+    spellcheck="false"
+    placeholder="API output will be shown here."
+    wrap="off"
+  ></textarea>
+</div>
+
+<div class="field_row">
+  <div class="empty_label">&nbsp;</div>
+  <div>
+    <button id="btn_input">Validate Input</button>
+    <button id="btn_submit">Submit</button>
+    <button id="btn_getfile">Get File</button>
+    <button id="btn_submit_file">Upload File</button>
+  </div>
+</div>
+
+<div class="field_row" style="margin-top: 50px;">
+  <div class="field_label">Console</div>
+  <textarea
+    class="field"
+    id="json_log"
+    name="json_log"
+    rows="10" cols="80"
+    readonly="true"
+    spellcheck="false"
+    placeholder="Request / JSON errors go here."
+    wrap="off"
+  ></textarea>
+</div>
+
+</body>
+</html> 
+
+<!--
+/* ===============================================================
+   End of test_api.html
+   =============================================================== */
+-->

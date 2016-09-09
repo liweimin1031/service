@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<link rel="stylesheet" href="jslib/bootstrap/css/bootstrap.min.css">
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>香港警察 Hong Kong Police</title>
+<style>
+#fb_post .media-body{
+    height: 75px;
+    overflow-y: hidden;
+}
+
+.comment_info{
+  font-size: 0.8em;
+  text-align: right;
+}
+
+div.paragraph{
+  word-wrap: break-word;
+  overflow: hidden;
+}
+
+.list-group-item.success{
+   background-color: #d9edf7;
+}
+
+
+.list-group-item.danger{
+   background-color: #f2dede;
+}
+
+.text_pos{
+   color: green;
+}
+
+.text_neg {
+   color: red;
+}
+
+</style>
+</head>
+
+<body>
+	<div class="container">
+		<div class="row">
+				<h2>香港警察 Hong Kong Police</h2>
+				<div id="fb_post">
+				</div>
+			
+		</div>
+
+	</div>
+    <!-- Modal -->
+	<div id="message-box" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h3 class="modal-title"></h3>
+				</div>
+				<div class="modal-body"></div>
+				<!-- <div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div> -->
+			</div>
+
+		</div>
+	</div>
+	<script type="text/javascript" src="jslib/jquery-1.11.3.js"></script>
+	<script type="text/javascript" src="jslib/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="jslib/bootstrap-paginator.js"></script>
+    
+	<script>
+   
+	var policeResult = {};
+	
+	policeResult.api = {
+	    getCommentByPostId: function(id, page, successCallBack){
+	      
+         $.ajax({
+          url: 'police.php/getPostComment',
+          data: {
+            post_id: id,
+            page: page
+          },
+          dataType: 'json',
+          method: 'POST',
+          success: function(result) {
+            if (result.success) {
+              successCallBack(result.data);
+             
+
+            } else {
+              policeResult.gui.showError(result.error);
+            }
+
+          },
+          error: function(result) {
+            //$('#analysis_result').append('Network Error');
+          }
+        });
+      }
+    };
+
+    policeResult.gui = {
+
+      showError: function(error) {
+        $('#message-box .modal-body').html('');
+        $('#message-box .modal-body').html(error.reason);
+        $('#message-box .modal-title').html('錯誤');
+        $('#message-box').modal('show');
+      },
+      showAnalysisResult: function(sentiment_counter, data, post_id) {
+        $('#message-box .modal-body').empty();
+        $('#message-box .modal-title').html('共有' + sentiment_counter.total + '篇評論');
+        $('#message-box .modal-body').html('<p>共有' + sentiment_counter.positive + '篇正面評論，'+sentiment_counter.negative+ '篇负面評論</p>');
+        $('<div id= "comment_list" class="list-group"></div>').appendTo('#message-box .modal-body');
+        $.each(data, function(index, paragraph){
+           var html = policeResult.gui.generateSingleComment(paragraph);
+           $(html).appendTo('#comment_list');
+        });
+        
+        policeResult.gui.generatePagination(Math.ceil(sentiment_counter.total / 10), post_id);
+        $('#message-box').modal('show');
+      },
+
+      updateAnalysisResult: function(page, post_id) {
+        $('#comment_list').empty();
+        policeResult.api.getCommentByPostId(post_id, page, function(data){
+          $('#comment_list').empty();
+          $.each(data, function(index, paragraph){
+            var html = policeResult.gui.generateSingleComment(paragraph);
+            $(html).appendTo('#comment_list');
+         });
+        });
+      },
+      generateSingleComment: function(paragraph_data) {
+        var html = '', score = '';
+        
+        if (paragraph_data.score_tranning>0){
+           score =' success';
+        } else if (paragraph_data.score_training<0){
+          score =' danger';
+        }
+        html = '<div class="list-group-item '+ score+'"><div class="paragraph">';
+        
+        if(paragraph_data.output){
+          $.each(paragraph_data.output, function(index, sentence) {
+            /*
+            if (sentence.sentiment == 'P') {
+              html += '<span class="text_pos">' + sentence.raw_sentence
+                      + '</span>';
+            } else if (sentence.sentiment == 'N') {
+              html += '<span class="text_neg">' + sentence.raw_sentence
+                      + '</span>';
+            } else {
+              html += '<span>' + sentence.raw_sentence + '</span>';
+            }*/
+            $.each(sentence.words, function(index, value){
+                if(value.positive){
+                  html += '<span class="text_pos">' + value.word
+                  + '</span>';
+                } else if (value.negative){
+                  html += '<span class="text_neg">' + value.word
+                  + '</span>';
+                } else {
+                  html +=value.word;
+                }
+            });
+
+          });
+        } else {
+           html +=  '<span>'+paragraph_data.message+ '</span>';
+        }
+        
+        html = html + '</div><div class="comment_info">From: ' + paragraph_data.name
+                + '(' + paragraph_data.created_time + ')'
+                + '</div></div>'
+        return html;
+      },
+      generatePagination: function(total, post_id) {
+        $('<div><ul id="pagination"></ul></div>').appendTo(
+                '#message-box .modal-body');
+        var options = {
+          currentPage: 1,
+          totalPages: total,
+          useBootstrapTooltip: true,
+          bootstrapMajorVersion: 3,
+          onPageChanged: function(e, oldPage, newPage) {
+            //console.log('jump to new page');
+            policeResult.gui.updateAnalysisResult(newPage, post_id);
+          }
+        }
+
+        $('#pagination').bootstrapPaginator(options);
+      }
+    }
+
+
+    $(document).ready(function() {
+
+       $.ajax({
+                 url: 'police.php/getRecentPost',
+                 dataType: 'json',
+                 method: 'POST',
+                 success: function(result) {
+                   if (result.success) {
+                     var list = $('<div class="list-group"></div>')
+                             .appendTo('#fb_post');
+                     $.each(result.data,function(index, value) {
+                          if (typeof (value.picture) == 'undefined') {
+                            picture = 'src = "http://placehold.it/130x73?text= No \n Image"';
+                          } else {
+                            picture = 'src="'
+                                    + value.picture
+                                    + '"';
+                          }
+                          var value = '<div class="list-group-item" data-id="'+value.id
+                                  +'" data-comment-total="'+value.sentiment_counter.total
+                                  +'" data-comment-positive="'+value.sentiment_counter.positive
+                                  +'" data-comment-negative="'+value.sentiment_counter.negative
+                                  + '"><div class="media" >'
+                                  + '<div class="media-left">'
+                                  + '    <img class="media-object post_image" '+picture+' alt="Image">'
+                                  + '</div>'
+                                  + '<div class="media-body">'
+                                  + value.message
+                                  + '</div></div></div>';
+                          list.append(value);
+
+                     });
+
+                     $('#fb_post div.list-group-item').click( function() {
+                          var item = $(this).attr('data-id');
+                          var comment_count = $(this).attr('data-comment-total');
+                          var comment_positive = $(this).attr('data-comment-positive');
+                          var comment_negative = $(this).attr('data-comment-negative');
+                          policeResult.api.getCommentByPostId(item,1,function(data) {
+                            policeResult.gui.showAnalysisResult({
+                               'total': comment_count,
+                               'positive': comment_positive,
+                               'negative': comment_negative
+                            },data,item);
+                          });
+                     });
+
+                  } else {
+                    policeResult.gui.showError(result.error);
+                  }
+
+                },
+                error: function(result) {
+                  //policeResult.gui.showError('Network Error');
+                }
+              });
+
+  });
+</script>
+</body>
+</html>

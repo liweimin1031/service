@@ -1,0 +1,37 @@
+{
+      "1" : {"value" : "Operation not permitted"},
+      "2" : {"value" : "No such file or directory"},
+      "4" : {"value" : "Interrupted"},
+      "5" : {"value" : "I/O error"},
+     "13" : {"value" : "Permission denied"},
+     "17" : {"value" : "File exists"},
+     "20" : {"value" : "Not a directory"},
+     "21" : {"value" : "Is a directory"},
+     "22" : {"value" : "Invalid argument"},
+     "27" : {"value" : "File too large"},
+     "38" : {"value" : "Not implemented"},
+    "110" : {"value" : "Timed out"},
+    "111" : {"value" : "Activity not found"},
+    "112" : {"value" : "Login failed"},
+
+
+  "65537" : {"value" : "Insert error"},
+  "65538" : {"value" : "Delete error"},
+  "65539" : {"value" : "Update error"},
+  "65540" : {"value" : "Select error"},
+
+
+  "131073" : {"value" : "Operation not permitted"},
+  "131083" : {"value" : "You signed in on another computer"},
+  "131085" : {"value" : "Permission denied"},
+  "131094" : {"value" : "Invalid argument"},
+  "131110" : {"value" : "Not implemented"},
+  
+  "196609" : {"value" : "Missing Client Name"},
+  "196610" : {"value" : "Missing Client Type"},
+  "196611" : {"value" : "Missing Return URI"},
+  "196612" : {"value" : "Can not generate Key value pair"},
+  "196613" : {"value" : "Wrong Oauth parameters"}
+
+
+}

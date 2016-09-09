@@ -1,0 +1,49 @@
+.ztabs {
+    padding:5px 10px 5px 10px;
+    margin: 5px 0px 0px 5px;
+}
+
+.tabs_region {
+    height:35px;
+}
+
+.content_region {
+    background-color:white;
+    min-height:200px;
+    height:100%;
+    max-width:850px;
+    border:1px solid #aaa;
+}
+
+.tabs_header,
+.tabs_header_active {
+    float : left;
+    margin-left:5px;
+    padding-top:5px;
+    text-align:center;
+    background-color:#ddd;
+    border:1px solid #ccc;
+    width:130px;
+    height:36px;
+    color:black;
+    cursor:pointer;
+}
+
+.tabs_header_active {
+    background-color:white;
+    font-weight:bold;
+    color:#5aa9dd;
+    border-top:2px solid #3dc5c5;
+    border-left:1px solid #ccc;
+    border-right:1px solid #ccc;
+    border-bottom:none;
+    cursor:default;
+}
+
+.tabs_content {
+    background-color:white;
+    padding-top:20px;
+    padding-left:10px;
+    width:100%;
+    height:100%;
+}

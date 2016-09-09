@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bootstrap 101 Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <h1>Topic</h1>
+    <table class="table table-hover" width=700px>
+      <tbody id="comments_table">
+
+    <script src="jslib/jquery-3.1.0.js"></script>
+    <script src="jslib/bootstrap.min.js"></script>
+    <script>
+      //draw table
+      tableDataFormat=[{
+        'title':'title',
+        'post_create_date':'2016-7-1',
+        'comments':[
+          {
+            'text':'comment text',
+            'word_flag':'comment word flag',
+            'analyse_word':'comment analyse word'
+          }]
+      }]
+      function getData(){
+        var data=opener.document.tableDataFormat
+        dataJson = eval("(" + data + ")")
+        console.log(data)
+        return dataJson
+      }
+      
+      function setTable(tableData){
+        var trLineNumber=tableData.length;
+        var _table = document.getElementById("comments_table"); 
+        var _row; 
+        var _cell; 
+        for (var i = 0; i < trLineNumber; i++) { 
+          _row = document.createElement("tr"); 
+          var td_topic=tableData[i].title;
+          var td_data=tableData[i].data;
+          _row.onclick= function(){setClick(this)}; //为每行增加单击事件 
+          _cell = document.createElement("td");
+          _cell.innerText = td_topic; 
+          _row.appendChild(_cell); 
+          document.getElementById("comments_table").appendChild(_row); 
+        } 
+      }
+      
+      function setClick(obj){
+      }
+
+      setTable(tableDataFormat(getData()))
+    </script>
+  </body>
+</html>

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="SHORTCUT ICON" href="/favicon.ico?v=2" />
+<link rel="stylesheet" href="../jslib/bootstrap/css/bootstrap.min.css" />
+<link rel="stylesheet" href="../css/demo.css" />
+<!--[if IE]>
+	<link rel="stylesheet" type="text/css" href="../css/ie.css" />
+<![endif]-->
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Find what offered</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top"
+			role="navigation">
+			<div class="container">
+				<!-- Brand and toggle get grouped for better mobile display -->
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target="#demo-navbar-collapse">
+						<span class="sr-only">Toggle navigation</span> <span
+							class="icon-bar"></span> <span class="icon-bar"></span> <span
+							class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="index.html"><img src="../images/ic_chef_extrasmall.png"></a>
+				</div>
+
+				<!-- Collect the nav links, forms, and other content for toggling -->
+				<div class="collapse navbar-collapse"
+					id="demo-navbar-collapse">
+					<ul class="nav navbar-nav">
+						
+					</ul>
+					<div class="navbar-form">
+						<div class="input-group col-sm-8 col-md-6">
+							<input type="text" class="form-control" id="detail_search"
+								placeholder="Search" />
+							<span class="input-group-addon" id="btn_detail_search">搜索</span>
+							</span>
+						</div>
+					</div>
+				</div>
+				<!-- /.navbar-collapse -->
+			</div>
+			<!-- /.container -->
+		</nav>
+   
+   
+	<div class="main">
+        
+		<div class="cover" ></div>
+        <!--   You can change the black color for the filter with those colors: blue, green, red, orange       -->
+        <!-- Search Entry Page -->
+        <div class="jumbotron" id="entry"> 
+               <div class="container media col-md-8 col-sm6-10">
+                   <div class="media-left">
+                       <img src ="../images/ic_chef_big.png">
+                   </div>
+                   <div class="media-body">
+                   <h2 class="media-heading">喺</h2>
+                   <div id="entry_search_form">
+						<form>
+							<div class="input-group">
+								<input type="text" class="form-control transparent" value="Club One" id="entry_search">
+								<span class="input-group-addon" id="btn_entry_search">搜索</span>
+							</div>
+						</form>
+
+				   </div>
+				   <h2 class="media-heading">有乜好嘢食?</h2>
+                   </div>
+               </div>
+       </div>
+		<div class="container" id="detail">
+			<div id="candidate_list"></div>
+			<div class="row" id="restaurant_recommend">
+				<div class="col-md-6 col-xs-12" >
+
+					<!--- Analysis result -->
+
+					<h2><img src="../images/ic_smile.png">大家推薦</h2>
+					<div class="cloud-tag" id="cloud-tag-good"></div>
+					<div id="cloud-tag-good-s"></div>
+
+				</div>
+				<div class="col-md-6 col-xs-12">
+					<h2><img src="../images/ic_sad.png">有待提高</h2>
+					<div class="cloud-tag" id="cloud-tag-bad"></div>
+					<div id="cloud-tag-bad-s"></div>
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<div class="container">
+				Powered <i class="fa fa-heart heart"></i> by <a href="#">ASTRI</a></a>
+			</div>
+	    </div>
+	</div>
+	
+	<!-- Modal -->
+	<div id="message-box" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h3 class="modal-title"></h3>
+				</div>
+				<div class="modal-body"></div>
+				<!-- <div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div> -->
+			</div>
+
+		</div>
+	</div>
+	<script type="text/javascript" src="../jslib/jquery-1.11.3.js"></script>
+
+	<script type="text/javascript" src="../jslib/bootstrap/js/bootstrap.min.js"></script>
+	<!-- 
+	<script type="text/javascript" src="jslib/sockjs-0.3.js"></script>
+	<script type="text/javascript" src="jslib/stomp.js"></script> -->
+	<script type="text/javascript" src="../jslib/d3.min.js"></script>
+	<script type="text/javascript" src="../jslib/d3.layout.cloud.js"></script>
+
+	<script>
+    $.extend({
+      distinct: function(anArray) {
+
+        var result = [];
+        $.each(anArray, function(i, v) {
+
+          if ($.inArray(v, result) == -1) result.push(v);
+        });
+        return result;
+      }
+    });
+    
+    var TextDemo ={
+      temp_result: null,
+      wait_for_pulling: '',
+      gui: {
+        bleed: 20,
+        height: $(window).height() - 350,
+        width: 0,
+        color: d3.scale.linear().domain([10, 20, 30, 40, 60, 80]).range(
+                ["#FFD54F", "#FFCA28", "#FFC107", "#FFB300", "#FFA000",
+                    "#FF8F00"]),
+        color2: d3.scale.linear().domain([10, 20, 30, 40, 60, 80]).range(
+                ["#B2EBF2", "#80DEEA", "#4DD0E1", "#26C6DA", "#00BCD4",
+                    "#00ACC1"]),
+        updateCandidateList: function(data) {
+          if (data.length == 1) {
+            var item = data[0];
+            
+            /*window.history.replaceState({
+              data: item,
+              status: 'page_analysis'
+            }, item.title);
+            TextDemo.gui.triggerSparkRequest(item);
+            */
+            TextDemo.gui.updateGuiByState({
+              status: 'page_analysis',
+              data: item
+            }, true);
+            
+            
+            
+          } else {
+            $('#candidate_list').append('<h2>分店列表</h2>');
+            var list = $('<div class="list-group"></div>').appendTo(
+                    '#candidate_list');
+            
+            
+               $.each(
+                            data,
+                            function(i, value) {
+                              var restarant_info = TextDemo.gui.generateRestarantInfo(value);
+                              list
+                                      .append('<div class="list-group-item" data-id="'+i+'">'+restarant_info+'</div>');
+                            });
+
+            $('#candidate_list div.list-group-item').click(function() {
+              var item = $(this).attr('data-id');
+              
+              TextDemo.gui.updateGuiByState({
+                  status: 'page_analysis',
+                  data: data[item]
+              }, true);
+              
+
+              return false;
+            });
+          }
+        },
+        showNoCandidate: function() {
+          var temp_height = $(window).height()-200;
+          
+          $('#candidate_list').html('<div style="height:+'+temp_height+'px">對不起，找不到相關結果</div>');
+          
+        },
+        
+        showSearchingInProgress: function(){
+          var temp_height = $(window).height()-200;
+          $('#candidate_list').html(
+                  '<div style="height:+'+temp_height+'px">搜索進行中...</div>');
+        },
+        clearWordCloud: function(){
+          $('#cloud-tag-good').empty();
+          $('#cloud-tag-bad').empty();
+          $('#cloud-tag-s').empty();
+          $('#cloud-tag-s').empty();
+        },
+        clearRecommend: function() {
+
+          $("#restaurant_recommend").css('display', 'none');
+          TextDemo.gui.clearWordCloud();
+        },
+        triggerSparkRequest: function(op) {
+
+          $('#candidate_list').html(TextDemo.gui.generateRestarantInfo(op));
+          $("#restaurant_recommend").css('display', 'block');
+          TextDemo.gui.clearWordCloud();
+          TextDemo.wait_for_pulling = op.href;
+          
+          TextDemo.api.submitAnalysisJob(op);
+          
+          //TextDemo.mq.send_data_to_msgqueue(op.href);
+        },
+        showError: function(error){
+          $('#message-box .modal-body').html('');
+          $('#message-box .modal-body').html(error.reason); 
+          $('#message-box .modal-title').html('錯誤');
+          $('#message-box').modal('show');
+        },
+        showAnalysisProgressBar: function(text, percentage){
+          if (typeof(text) == 'undefined'){
+              text ="等待處理";
+          }
+          if (typeof(percentage) == 'undefined'){
+            percentage ="10";
+          }
+          if($("#analysis_progressbar").length == 0) {
+          		$('<div id="analysis_progressbar" class="col-xs-6 col-sm-3"><div class="progress progress-striped active">'
+          		    +'<span class="progressbar-back-text">'+text+'</span>'
+          		    +'<div class="progress-bar progress-bar-warning" style="min-width: 2em; width: '+percentage+'%;">'
+          		    +'<span class="progressbar-front-text">'+text+'</span>'
+         			+'</div></div></div>').appendTo('#candidate_list .media-body');
+          		$("#analysis_progressbar span.progressbar-front-text").attr('style', 'width:'+ $("#analysis_progressbar").width()+'px');
+          } else {
+            $("#analysis_progressbar span").html(text);
+            $("#analysis_progressbar div.progress-bar").attr('style', 'min-width: 2em; width: '+percentage+'%;');
+          }
+        },
+        generateRestarantInfo: function(value){
+          
+          return '<div class="media" >'
+                  + '<div class="media-left">'
+                  + '    <img class="media-object restaurant_profile" src="'+value.image+'" alt="Image">'
+                  + '</div>'
+                  + '<div class="media-body">'
+                  + '   <h4 class="media-heading restaurant_title">'
+                  +      value.title
+                  + '</h4>'
+                  + '   <p class="restaurant_address"><img src="../images/ic_location.png" >' + value.location_detail+'</p>'
+                  + '</div></div>';
+        },
+        showMenuSentiment: function(key, firstTab){
+          $('#message-box .modal-body').empty(); 
+          $('#message-box .modal-title').html(key);
+          var sentences = TextDemo.temp_result.sentences;
+          var images = TextDemo.temp_result.images;
+          var image = null;
+          $.each(images, function(index,value){
+               if (value.key == key){
+                  $('<div class="media-left" ><img class="media-object menu-profile" src="'+value.src+'" alt="'+key+'"></div>').appendTo('#message-box .modal-body');
+               }
+          })
+          var pos_item = TextDemo.temp_result.positive_items[key];
+          var neg_item = TextDemo.temp_result.negtive_items[key];
+          
+          
+          
+          $('<div id="review_detail_tab" class="panel with-nav-tabs">'
+            +'    <div>'
+            +'       <ul class="nav nav-tabs">'
+            +'          <li><a href="#positive" data-toggle="tab">正面評價<span class="pos_size"></span></a></li>'
+            +'          <li><a href="#negative" data-toggle="tab">負面評價<span class="neg_size"></span></a></li>'
+            +'      </ul>'
+            +'   </div>'
+            +'   <div class="panel-body">'
+            +'    <div class="tab-content">'
+            +'      <div class="tab-pane fade in list-group"  id="positive"></div>'
+            +'      <div class="tab-pane fade list-group" id="negative"></div>'
+            +'    </div>'
+            +'   </div>'
+            +'</div>').appendTo('#message-box .modal-body');
+          
+          if(pos_item){
+             $('#message-box .modal-body span.pos_size').html('('+pos_item.sentence_indexes.length+')');
+             $.each(pos_item.sentence_indexes, function(index, sentence_index) {
+                 var string  = TextDemo.gui.generateBySentenceIndex(sentences, sentence_index);
+                 $(string).appendTo('#positive');
+            });
+          } else{
+            $('#message-box .modal-body span.pos_size').html('(0)');
+            $('<p>暫無相關評論</p>').appendTo('#positive');
+          }
+          if(neg_item){
+            $('#message-box .modal-body span.neg_size').html('('+neg_item.sentence_indexes.length+')');
+            $.each(neg_item.sentence_indexes, function(index, sentence_index) {
+                var string  = TextDemo.gui.generateBySentenceIndex(sentences, sentence_index);
+                $(string).appendTo('#negative');
+           });
+          } else {
+            $('#message-box .modal-body span.neg_size').html('(0)');
+            $('<p>暫無相關評論</p>').appendTo('#negative');
+          }
+          if (firstTab == 'pos'){
+              $('#review_detail_tab a:first').tab('show') // Select first tab
+          } else {
+            $('#review_detail_tab a:last').tab('show') 
+          }
+
+          $('#message-box').modal('show');
+            
+        },
+        generateBySentenceIndex: function(sentences, sentence_index){
+          var sentence = sentences[sentence_index].words;
+          var sentiment = sentences[sentence_index].sentiment;
+          var reliability = sentences[sentence_index].sentiment_pos;
+          if (sentiment == 'P' && reliability == 1) {
+            icon = 'great'
+          } else if (sentiment == 'P') {
+            icon = 'ok'
+          } else if (sentiment == 'N' && reliability == 1) {
+            icon = 'cry'
+          } else if (sentiment == 'N') {
+            icon = 'unhappy'
+          }
+          var text = '<img src="../images/'+ icon+'.png" class="sentiment_icon">';
+          text = '';
+          $.each(sentence, function(wordindex, element) {
+
+            var type = ""
+            if (element.negative) {
+              type = 'text_negative';
+            } else if (element.positive) {
+              type = 'text_positive'
+            }
+            if (element.oral) {
+              type += ' text_oral'
+            }
+            text += '<span class="textmining '+ type+'">' + element.word
+                    + '</span>'
+          });
+          return '<div class="list-group-item">'+text+'</div>';
+        },
+        getScale:function(words){
+          var weight_max = 0, weight_min = 0; 
+          $.each(words, function(index, value) {
+             if (value.topic.length < 2) { return; }
+             weight_max = Math.max(weight_max, value.sentence_indexes.length);
+              weight_min = Math.min(weight_min,value.sentence_indexes.length);
+          });
+          return {max: weight_max, min :weight_min};
+        },
+        updateRecommendByType: function(words, divid, scale, firstTab, color) {
+          var topics = [];
+          var drawCloud = function(id, words) {
+
+            //console.log(words);
+            var width = TextDemo.gui.width, height = TextDemo.gui.height;
+            d3.select("#" + id).append("svg").attr("width", width).attr(
+                    "height", height).attr("class", "wordcloud").append("g")
+            // without the transform, words words would get cutoff to the left and top, they would
+            // appear outside of the SVG area
+            .attr("transform", "translate(" + [width >> 1, height >> 1] + ")")
+                    .selectAll("text").data(words).enter().append("text")
+                    .style("font-size", function(d) {
+                      return d.size + "px";
+                    })
+                    //.style("font-family", "Impact")
+                    .attr("text-anchor", "middle").style("fill",
+                            function(d, i) {
+                              //return fill(d.text.toLowerCase());
+                              //console.log(color(i));
+                              return color(d.size);
+                            }).attr(
+                            "transform",
+                            function(d) {
+                              return "translate(" + [d.x, d.y] + ")rotate("
+                                      + d.rotate + ")";
+                            }).text(function(d) {
+
+                      return d.text;
+                    }).on('click', function(d, i) {
+                        d.handlers.click();
+                    });
+          }
+          $.each(words, function(index, value) {
+
+           
+          if (value.topic.length < 2) { return; }
+            var item = {}
+            item.text = value.topic;
+            item.size = value.sentence_indexes.length;
+            item.handlers = {
+              'click': function() {
+                TextDemo.gui.showMenuSentiment(item.text, firstTab);
+              }
+            }
+            topics.push(item);
+          });
+          var wordScale= function(size){
+             return 30;
+          }
+          if(scale.min != scale.max){
+             wordScale = d3.scale['sqrt']().domain(
+                    [scale.min || 1, scale.max]).range([12, 80]).clamp(true);
+          }
+          
+          d3.layout.cloud().size(
+                  [TextDemo.gui.width,
+                      TextDemo.gui.height - 2 * TextDemo.gui.bleed]).words(
+                  topics).rotate(0).text(function(d) {
+            return d.text;
+          }).fontSize(function(d) {
+            return wordScale(d.size);
+          }).on("end", function() {
+
+            drawCloud(divid, topics)
+          }).start();
+
+        },
+        updateSentiment: function(result){
+          if (TextDemo.gui.width == 0) {
+            TextDemo.gui.width = $('#cloud-tag-good').width();
+          }
+          
+          var scale_neg = 1;
+          var scale_pos = 1;
+          if(typeof(result.negtive_items) != 'undefined'){
+             scale_neg = TextDemo.gui.getScale(result.negtive_items);
+          } 
+          if (typeof(result.positive_items) != 'undefined'){
+            scale_pos =  TextDemo.gui.getScale(result.positive_items);
+          }
+          
+          
+          var scale ={
+             max : Math.max(scale_neg.max, scale_pos.max, 1),
+             min : Math.max(scale_neg.min, scale_pos.min, 1),
+          };
+          
+          if(typeof(result.negtive_items) != 'undefined'){
+            TextDemo.gui.updateRecommendByType(result.negtive_items,
+                    'cloud-tag-bad', scale, 'neg', TextDemo.gui.color2);
+         } 
+         if (typeof(result.positive_items) != 'undefined'){
+           TextDemo.gui.updateRecommendByType(result.positive_items,
+                   'cloud-tag-good', scale, 'pos', TextDemo.gui.color);
+         }
+          
+         
+
+         
+
+        },
+        parseQuery: function () {
+          var query = {};
+          var a = window.location.search.substring(1).split('&');
+          for (var i = 0; i < a.length; i++) {
+              if(a[i]== ''){
+                break;
+              }
+              var b = a[i].split('=');
+              query[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || '');
+          }
+          return query;
+        },
+        showEntryPage: function(){
+          
+          $('#entry').css("display", "flex");
+          $('.navbar').css("display", "none");
+          $('#detail').css("display", "none");
+        }, 
+        showDetailPage: function(){
+          $('#entry').css("display", "none");
+          $('.navbar').css("display", "block");
+          $('#detail').css("display", "block");
+        },
+        updateGuiByState: function(state, pushState){
+          //console.log('show '+state.status);
+          if (typeof(pushState) != 'undefined'  && pushState == true){
+             var param='', title= ''
+             if (state.status == 'page_list') {
+                 param='?' + $.param({
+                   q: state.data.openrice_search
+                 });
+                 title = "Search "+ state.data.openrice_search;
+                 
+             } else if (state.status == 'page_analysis'){
+                 param='?' + $.param({
+                   a: state.data.href
+                 });
+                 
+                 title = 'Analysis ';
+             } else {
+
+                 title = 'Find best'
+             } 
+             
+            var newurl = window.location.protocol + "//" + window.location.host
+                    + window.location.pathname + param
+            //console.log('push state:'+state.status)
+            window.history.pushState(state, title, newurl);
+
+          }
+          if (state.status == 'page_list') {
+            TextDemo.gui.showDetailPage();
+            TextDemo.gui.clearRecommend();
+            TextDemo.api.searchFromOpenRice({
+              'openrice_search': state.data.openrice_search
+            });
+
+          } else if (state.status == 'page_analysis') {
+            TextDemo.gui.showDetailPage();
+            if (state.data && state.data.title) {
+              TextDemo.gui.triggerSparkRequest(state.data);
+            } else {
+              TextDemo.api.getRestarantInfo(state.data.href);
+            }
+
+          } else {
+            TextDemo.gui.showEntryPage();
+          }
+        },
+        init: function() {
+          var is_safari = navigator.vendor.indexOf("Apple")==0 && /\sSafari\//.test(navigator.userAgent); 
+
+          var query = TextDemo.gui.parseQuery();
+          var state = {
+              status : '',
+              data: {}
+          };
+          var popstatePageloadFix = {
+            popped: ('state' in window.history && window.history.state !== null),
+            initialUrl: location.href,
+            initialPop: false,
+            init: function() {
+              this.initialPop = !this.popped
+                      && location.href == this.initialUrl;
+              this.popped = true;
+              //console.log(this.initialPop);
+              return this.initialPop;
+            }
+          };
+
+          if (query.q) {
+            var state = {
+                    status: 'page_list',
+                    data:{
+                      'openrice_search': query.q
+                    }
+                }
+
+          } else if (query.a) {
+            state.status = 'page_analysis';
+            state.data.href = query.a;
+
+          } else {
+            state.status = 'page_root';
+          }
+
+          // For the init page, don't push state
+          TextDemo.gui.updateGuiByState(state);
+
+          $('#entry_search_form').submit(function(form) {
+
+            var data = $(this).find('input').val();
+            if (data == '') {
+              event.preventDefault(); // avoid to execute the actual submit of the form.
+            } else {
+             
+              var state = {
+                  status: 'page_list',
+                  data:{
+                    'openrice_search': data
+                  }
+              }
+              TextDemo.gui.updateGuiByState(state, true);
+             
+            }
+
+          });
+
+          $("#entry_search").keypress(function(event) {
+            if (event.keyCode == 13) {
+              $("#entry_search_form").trigger("submit");
+            }
+          });
+
+          $('#btn_entry_search').click(function() {
+            $("#entry_search_form").trigger("submit");
+          });
+          $('#detail_search').keypress(function(event) {
+            if (event.keyCode == 13) {
+              var data = $(this).val();
+              if (data == '') { return; }
+              var state = {
+                      status: 'page_list',
+                      data:{
+                        'openrice_search': data
+                      }
+              }
+              TextDemo.gui.updateGuiByState(state, true);
+            }
+          });
+          $('#btn_detail_search').click(function() {
+            var data = $('#detail_search').val();
+            if (data == '') { return; }
+            var state = {
+                    status: 'page_list',
+                    data:{
+                      'openrice_search': data
+                    }
+            }
+            TextDemo.gui.updateGuiByState(state, true);
+          });
+
+          $(window).bind('popstate', function(event) {
+            if (is_safari &&　popstatePageloadFix.init()) return;
+            if (history.state) {
+              TextDemo.gui.updateGuiByState(history.state);
+            } else {
+              //console.log('no state');
+              window.location.href = location.pathname
+            }
+          })
+        },
+        updateAnalysisResult: function(data) {
+          var result = data.data.output;
+          //save the temp result
+          TextDemo.temp_result = result;
+          $('#analysis_progressbar').remove();
+          if (result == null) { return; }
+          $("#restaurant_recommend").css('display', 'block');
+          TextDemo.gui.clearWordCloud();
+          if (result.no_comment) {
+            TextDemo.gui.showError({
+              reason: '對不起，這間餐廳暫時沒有評論'
+            });
+          } else {
+            TextDemo.gui.updateSentiment(result);
+          }
+
+        }
+      },
+      api: {
+        submitAnalysisJob: function(op) {
+
+          TextDemo.gui.showAnalysisProgressBar();
+          
+          var url = "../ajax.php/submitOpenriceAnalysisJob";
+          $.ajax({
+            type: "POST",
+            url: url,
+            dataType: 'json',
+            data: {
+              url: op.href
+            },
+            success: function(data) {
+              
+              var query = TextDemo.gui.parseQuery();
+              
+              if (typeof(query.a) == 'undefined'){
+                return;
+              }
+              if (data.success) {
+                var request_url = data.data.input.url;
+                if (TextDemo.wait_for_pulling != request_url) { return; }
+                if (data.data.output && data.data.output != '') {
+                  TextDemo.gui.updateAnalysisResult(data);
+                } else {
+                  TextDemo.api.getTaskResult(data.data.task_id);
+                }
+
+              } else {
+                TextDemo.gui.showError(data.error);
+              }
+            }
+          });
+        },
+        getTaskResult: function(id, callback) {
+          
+          var url = "../ajax.php/getTaskResult"; // the script where you handle the form input.
+          $.ajax({
+            type: "POST",
+            url: url,
+            dataType: 'json',
+            data: {
+              taskid: id
+            },
+            success: function(data) {
+              var query = TextDemo.gui.parseQuery();
+              
+              if (typeof(query.a) == 'undefined'){
+                  return;
+              }
+              
+              if (data.success) {
+                var request_url = data.data.input.url;
+                //If this is not the URL anymore, stop the timer
+                if (TextDemo.wait_for_pulling != request_url) { return; }
+                //console.log(data.data.status);
+                if (data.data.status == '100') {
+                  TextDemo.gui.updateAnalysisResult(data);
+
+                } else if (data.data.status == '201') {
+                  //doing nothing
+                  if (data.data.progress) {
+                    var text = data.data.progress.message;
+                    if(text == 'Start sentiment analysis'){
+                        text = '開始情感分析';
+                    } else if (text == 'Initial setup'){
+                        text = '分析初始化';
+                    } else if (text == 'Start menu analysis'){
+                        text = '開始食譜分析';
+                    } else if(text.indexOf('Crawling')==0){
+                        text = '從網絡獲取'+text.replace(/[^0-9]/ig,"")+'網頁';
+                    }
+                    text= '分析進行中';
+                    var percentage = data.data.progress.percentage;
+                    TextDemo.gui.showAnalysisProgressBar(text, percentage);
+                  }
+
+                  setTimeout(function() {
+                    TextDemo.api.getTaskResult(id);
+                  }, 5000);
+                }
+
+              } else {
+                $('#analysis_progressbar').remove();
+                TextDemo.gui.showError(data.error);
+              }
+            }
+          });
+        },
+        getRestarantInfo: function(url) {
+          TextDemo.gui.showSearchingInProgress();
+          $.ajax({
+            type: "GET",
+            url: '../ajax.php/getRestaurantInfo',
+            dataType: 'json',
+            data: {
+              url: url, // serializes the form's elements.
+            },
+            success: function(data) {
+              var query = TextDemo.gui.parseQuery();
+              
+              if (typeof(query.a) == 'undefined' || query.a !== url){
+                return;
+              }
+              if (data.success) {
+                var currentState = history.state;
+                window.history.replaceState({
+                  data: data.data,
+                  status: 'page_analysis'
+                }, data.data.title);
+                TextDemo.gui.triggerSparkRequest(data.data);
+              } else {
+                TextDemo.gui.showNoCandidate();
+              }
+            }
+          });
+        },
+        searchFromOpenRice: function(form_data) {
+          TextDemo.wait_for_pulling = '';
+          var url = "../ajax.php/getOpenRiceList"; // the script where you handle the form input.
+          window.history.replaceState({
+            data: {
+               openrice_search: form_data.openrice_search
+            },
+            status:  'page_list'
+          }, 'Searching ' + form_data);
+          TextDemo.gui.showSearchingInProgress();
+          $.ajax({
+            type: "POST",
+            url: url,
+            dataType: 'json',
+            data: form_data, // serializes the form's elements.
+            success: function(data) {
+              var query = TextDemo.gui.parseQuery();
+              if (typeof(query.q) == 'undefined'){
+                return;
+              }
+              $('#candidate_list').empty();
+              if (data.success) {
+                //var currentState = history.state;
+                
+                TextDemo.gui.updateCandidateList(data.data);
+                
+              } else {
+                TextDemo.gui.showNoCandidate();
+              }
+            }
+          });
+          if (event) {
+            event.preventDefault(); // avoid to execute the actual submit of the form.
+          }
+
+        }
+      }
+    };
+
+    function fakeCall() {
+      var op = {
+        href: "http://www.openrice.com/zh/hongkong/restaurant/%E6%B7%BA%E6%B0%B4%E7%81%A3-%E6%9C%83%E6%89%801%E8%99%9F-%E6%B7%BA%E6%B0%B4%E7%81%A3/174000?tc=sr1",
+        image: "http://static4.orstatic.com/userphoto/photo/7/64W/017MRN8740BF305CA067FAn.jpg",
+        location: "淺水灣",
+        location_detail: "淺水灣海灘道16號 ",
+        title: "會所1號 淺水灣  ClubONE Repulse Bay "
+      };
+      $('#candidate_list').html(TextDemo.gui.generateRestarantInfo(op));
+      $("#restaurant_recommend").css('display', 'block');
+      $('#cloud-tag-bad-s').empty();
+      $('#cloud-tag-good-s').empty();
+      $('#cloud-tag-bad').empty();
+      $('#cloud-tag-good').empty();
+
+      $.getJSON("result.txt", function(json) {
+        var result = json;
+        TextDemo.temp_result = result;
+        if (TextDemo.gui.width == 0) {
+          TextDemo.gui.width = $('#cloud-tag-good').width();
+        }
+        TextDemo.gui.updateSentiment(result);
+      });
+      return;
+    }
+    //TextDemo.mq.init_mq(TextDemo.api.getTaskResult)
+    $(document).ready(function() {
+      TextDemo.gui.init();
+    });
+  </script>
+</body>
+</html>
