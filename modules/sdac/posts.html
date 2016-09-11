@@ -17,7 +17,7 @@
       //draw table
       var tableDataFormat=[{
         'title':'title',
-        'post_create_date':'2016-7-1',
+        'date':'2016-7-1',
         'comments':[
           {
             'text':'comment text',
@@ -47,6 +47,9 @@
       function setClick(obj){
         var data_index=obj.rowIndex;
         var data=tableDataFormat[data_index]
+        var obj=window;
+        obj.data=data;
+        console.log(data);
         var windowOpen = window.open("comments.html");
         //windowOpen.document.write()
         /*
